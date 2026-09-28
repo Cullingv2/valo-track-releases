@@ -1420,10 +1420,10 @@ function playerFor(puuid) {
 
 const careerKey = (v) => `${v.player.puuid}|${v.actId || "cur"}|${v.competitive ? "c" : "a"}`;
 
-function openCareer(puuid, given = null) {
+function openCareer(puuid, given = null, nav = null) {
   const player = given || playerFor(puuid);
   if (!player) return;
-  const view = { kind: "career", player, competitive: true, actId: null, tab: "matches", shown: 20, data: null, error: null };
+  const view = { kind: "career", player, nav, competitive: true, actId: null, tab: "matches", shown: 20, data: null, error: null };
   // Déjà consulté : affichage immédiat, puis actualisation discrète.
   view.data = app.careerCache.get(careerKey(view)) || null;
   view.filled = !!view.data;
@@ -1677,9 +1677,173 @@ function prefetchPlayers(s) {
   TAURI.core.invoke("prefetch_players", { puuids: ids }).catch(() => {});
 }
 
+/* ───────────── Menu principal ───────────── */
+
+/** Onglet du menu : celui qui a ouvert la première vue de la pile (sinon la partie). */
+function navSection() {
+  return (app.stack[0] || app.view)?.nav || "game";
+}
+
+async function goNav(section) {
+  if (app.capturing) return;
+  if (section === navSection()) {
+    // Déjà dans cette section : retour à sa première page
+    if (!app.stack.length && (section !== "game" || !app.view)) return;
+    app.view = section === "game" ? null : app.stack[0] || app.view;
+    app.stack = [];
+    return transition();
+  }
+  app.stack = [];
+  app.view = null;
+  if (section === "game") return transition();
+  if (section === "settings") {
+    app.view = { kind: "settings", nav: "settings" };
+    transition();
+    return loadHotkey();
+  }
+  const me = await myPlayer();
+  if (!me) {
+    app.view = { kind: "empty", nav: "profile", title: "Profil indisponible", text: "Ouvre le client Riot et connecte-toi : ton profil s'affichera ici." };
+    return transition();
+  }
+  openCareer(me.puuid, me, "profile");
+}
+
+/** Toi : depuis la partie en cours si possible, sinon depuis la session Riot. */
+async function myPlayer() {
+  const live = currentSnap()?.players.find((p) => p.isMe);
+  if (live) return live;
+  if (!TAURI || app.demo) return null;
+  const me = await TAURI.core.invoke("get_me").catch(() => null);
+  if (!me) return null;
+  return { puuid: me.puuid, name: me.name, tag: me.tag, cardId: me.cardId, level: me.level, isMe: true, agentId: null, party: null, rank: null };
+}
+
+/* ── Réglages : raccourci ── */
+
+const KEY_LABELS = { Space: "Espace", Backquote: "²", Minus: ")", Equal: "=", ArrowUp: "↑", ArrowDown: "↓", ArrowLeft: "←", ArrowRight: "→", PageUp: "Page ↑", PageDown: "Page ↓", Insert: "Inser", Home: "Début", End: "Fin", ScrollLock: "Arrêt défil", Pause: "Pause" };
+const ALONE_OK = /^(F\d{1,2}|Insert|Home|End|PageUp|PageDown|Pause|ScrollLock)$/;
+
+function keycaps(hotkey) {
+  return `<span class="keys">${String(hotkey || "")
+    .split("+")
+    .map((k) => `<kbd>${esc(KEY_LABELS[k] || k.replace(/^Numpad/, "Pavé "))}</kbd>`)
+    .join("<i>+</i>")}</span>`;
+}
+
+async function loadHotkey() {
+  app.hotkey = TAURI ? await TAURI.core.invoke("get_hotkey").catch(() => null) : null;
+  app.hotkey ||= { hotkey: app.cfg?.hotkey || "Alt+Z", hold: app.cfg?.mode === "hold" };
+  refreshSettings();
+}
+
+function settingsBody() {
+  const h = app.hotkey || { hotkey: app.cfg?.hotkey || "Alt+Z", hold: false };
+  const msg = app.hotkeyMsg;
+  const key = app.capturing
+    ? `<span class="capture-txt">Appuie sur la nouvelle touche…</span><em>Échap pour annuler</em>`
+    : `${keycaps(h.hotkey)}<em>Modifier</em>`;
+  return `
+      <section class="set-card" style="--i:0">
+        <h3>Touche de l'overlay</h3>
+        <p>La touche qui ouvre et ferme l'overlay, même en pleine partie. Choisis une combinaison que ni le jeu ni un autre logiciel (Discord, NVIDIA…) n'utilise déjà.</p>
+        <button class="keycap-btn${app.capturing ? " capturing" : ""}" data-act="hotkey">${key}</button>
+        <div class="set-msg ${msg?.cls || ""}">${esc(msg?.text || "")}</div>
+      </section>
+      <section class="set-card" style="--i:1">
+        <h3>Comportement</h3>
+        <p>Appuyer une fois pour ouvrir puis une fois pour fermer, ou garder l'overlay ouvert seulement tant que la touche est enfoncée.</p>
+        <div class="seg">
+          <button data-hold="0" class="${h.hold ? "" : "on"}">Appuyer pour ouvrir / fermer</button>
+          <button data-hold="1" class="${h.hold ? "on" : ""}">Maintenir enfoncée</button>
+        </div>
+      </section>
+      <section class="set-card wide" style="--i:2">
+        <h3>Fenêtre</h3>
+        <p>L'overlay est une vraie fenêtre : tu le retrouves dans la barre des tâches et avec Alt+Tab. La croix le réduit, l'application reste active (icône V rouge près de l'horloge, clic droit pour quitter).</p>
+        <div class="set-about"><span>Version <b>${esc(app.version || "")}</b></span><span>Code source et mises à jour : <b>github.com/Cullingv2/valo-track-releases</b></span></div>
+      </section>`;
+}
+
+function viewSettings() {
+  return `<div class="career-bar">${BACK_BTN}<span class="tabs-note">Réglages</span></div><div class="settings" id="settings">${settingsBody()}</div>`;
+}
+
+/** Redessine les réglages sans rejouer l'animation d'entrée. */
+function refreshSettings() {
+  if (app.view?.kind !== "settings") return;
+  const el = $("#settings");
+  if (!el) return render();
+  el.innerHTML = settingsBody();
+}
+
+async function startCapture() {
+  if (app.capturing) return;
+  app.capturing = true;
+  app.hotkeyMsg = null;
+  if (TAURI) await TAURI.core.invoke("pause_hotkey").catch(() => {});
+  refreshSettings();
+}
+
+/** Nom de touche compris par le raccourci global (touches physiques : indépendant du clavier). */
+function keyName(code) {
+  let m;
+  if ((m = code.match(/^Key([A-Z])$/))) return m[1];
+  if ((m = code.match(/^Digit(\d)$/))) return m[1];
+  if (/^(F\d{1,2}|Numpad\d|Space|Backquote|Minus|Equal|BracketLeft|BracketRight|Backslash|Semicolon|Quote|Comma|Period|Slash|Insert|Home|End|PageUp|PageDown|Pause|ScrollLock|Arrow(Up|Down|Left|Right))$/.test(code)) return code;
+  return null;
+}
+
+function captureKey(e) {
+  if (!app.capturing) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if (["Control", "Shift", "Alt", "Meta", "AltGraph", "OS"].includes(e.key)) return;
+  if (e.key === "Escape" && !e.ctrlKey && !e.altKey && !e.shiftKey) return endCapture(null);
+  const key = keyName(e.code);
+  if (!key) {
+    app.hotkeyMsg = { cls: "err", text: "Cette touche n'est pas prise en charge, essaie une autre." };
+    return refreshSettings();
+  }
+  const mods = [e.ctrlKey && "Ctrl", e.altKey && "Alt", e.shiftKey && "Shift"].filter(Boolean);
+  if (!mods.length && !ALONE_OK.test(key)) {
+    app.hotkeyMsg = { cls: "err", text: "Ajoute Ctrl, Alt ou Shift : une touche seule serait bloquée dans le jeu (sauf F1 à F12, Inser, Début…)." };
+    return refreshSettings();
+  }
+  endCapture([...mods, key].join("+"));
+}
+
+async function endCapture(hotkey) {
+  app.capturing = false;
+  app.skipEscUp = true;
+  const old = app.hotkey?.hotkey || "Alt+Z";
+  if (!hotkey) {
+    // Annulé : l'ancien raccourci est réactivé
+    if (TAURI) await TAURI.core.invoke("set_hotkey", { hotkey: old }).catch(() => {});
+    app.hotkeyMsg = null;
+    return refreshSettings();
+  }
+  try {
+    const saved = TAURI ? await TAURI.core.invoke("set_hotkey", { hotkey }) : hotkey;
+    app.hotkey = { ...(app.hotkey || {}), hotkey: saved };
+    app.hotkeyMsg = { cls: "ok", text: `Enregistré : ${saved} ouvre maintenant l'overlay.` };
+  } catch (e) {
+    app.hotkeyMsg = { cls: "err", text: `${hotkey} : ${e}. ${old} reste actif.` };
+  }
+  refreshSettings();
+}
+
+async function setHold(hold) {
+  if (TAURI) await TAURI.core.invoke("set_hold", { hold }).catch(() => {});
+  app.hotkey = { ...(app.hotkey || { hotkey: "Alt+Z" }), hold };
+  refreshSettings();
+}
+
 /* ───────────── Rendu ───────────── */
 
 function renderHeader(s) {
+  const section = navSection();
+  document.querySelectorAll("#nav [data-nav]").forEach((b) => b.classList.toggle("on", b.dataset.nav === section));
   const m = mapById(s.mapId);
   const q = queueLabel(s);
   const meta = $("#meta");
@@ -1712,7 +1876,10 @@ function render() {
   if (root.classList.contains("enter")) root.style.setProperty("--ea", `-${Math.round(performance.now() - app.enterAt)}ms`);
   renderHeader(s);
   let html;
-  if (app.view) html = app.view.kind === "match" ? viewMatch(app.view) : app.view.kind === "result" ? viewResult(app.view) : viewCareer(app.view);
+  if (app.view) {
+    const k = app.view.kind;
+    html = k === "match" ? viewMatch(app.view) : k === "result" ? viewResult(app.view) : k === "settings" ? viewSettings() : k === "empty" ? viewEmpty(app.view.title, app.view.text) : viewCareer(app.view);
+  }
   else {
     switch (s.phase) {
       case "ingame": html = viewIngame(s); break;
@@ -1836,8 +2003,10 @@ function setCompactIcon(compact) {
 
 function bindUi() {
   $("#view").addEventListener("click", (e) => {
-    const el = e.target.closest("[data-puuid], [data-match], [data-act-id], [data-act], [data-queue], [data-tab]");
+    const el = e.target.closest("[data-puuid], [data-match], [data-act-id], [data-act], [data-queue], [data-tab], [data-hold]");
     if (!el) return;
+    if (el.dataset.act === "hotkey") return startCapture();
+    if (el.dataset.hold) return setHold(el.dataset.hold === "1");
     if (el.dataset.puuid) openCareer(el.dataset.puuid);
     else if (el.dataset.tab) setTab(el.dataset.tab);
     else if (el.dataset.match) openMatch(el.dataset.match);
@@ -1852,6 +2021,11 @@ function bindUi() {
     }
   });
   $("#close").addEventListener("click", hideOverlay);
+  $("#nav").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-nav]");
+    if (b) goNav(b.dataset.nav);
+  });
+  document.addEventListener("keydown", captureKey, true);
   // Réduire / agrandir, et redimensionner en tirant sur les bords
   $("#compactBtn").addEventListener("click", async () => {
     if (!TAURI) return document.documentElement.classList.toggle("compact");
@@ -1871,6 +2045,10 @@ function bindUi() {
   // Au relâchement : si on masque sur l'appui, le relâchement d'Échap part dans le jeu
   // (qui ouvre alors son menu).
   document.addEventListener("keyup", (e) => {
+    if (app.capturing || app.skipEscUp) {
+      app.skipEscUp = false;
+      return;
+    }
     if (e.key !== "Escape" || Date.now() - (app.lastEsc || 0) < 250) return;
     app.lastEsc = Date.now();
     if (introPlaying()) endIntro();
@@ -1894,6 +2072,7 @@ async function main() {
     const { invoke } = TAURI.core;
     const { listen } = TAURI.event;
     app.cfg = await invoke("get_config").catch(() => null);
+    app.version = await TAURI.app.getVersion().catch(() => "");
     invoke("is_compact").then(setCompactIcon).catch(() => {});
     document.documentElement.classList.toggle("no-anim", app.cfg?.animations === false);
     app.snap = await invoke("get_snapshot");

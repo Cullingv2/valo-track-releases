@@ -57,7 +57,12 @@ fn main() {
             overlay::show_overlay,
             overlay::hide_overlay,
             overlay::toggle_compact,
-            overlay::is_compact
+            overlay::is_compact,
+            overlay::get_hotkey,
+            overlay::pause_hotkey,
+            overlay::set_hotkey,
+            overlay::set_hold,
+            career::get_me
         ])
         .run(tauri::generate_context!())
         .expect("impossible de lancer Valo Overlay");

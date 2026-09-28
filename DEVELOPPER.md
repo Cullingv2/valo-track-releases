@@ -54,7 +54,7 @@ Relancer l'application quand elle tourne déjà ouvre simplement l'overlay.
 }
 ```
 
-- `hotkey` : `"Alt+Z"`, `"Ctrl+Shift+V"`, `"F10"`…
+- `hotkey` : `"Alt+Z"`, `"Ctrl+Shift+V"`, `"F10"`… (modifiable aussi dans l'écran Réglages, pris en compte tout de suite)
 - `mode` : `"toggle"` (un appui ouvre / ferme) ou `"hold"` (visible tant que la touche est enfoncée)
 - `language` : langue des noms d'agents, de cartes et de rangs
 - `intro` : `"launch"` (la fenêtre s'ouvre sur l'intro au démarrage de l'application), `"daily"` (première ouverture du jour), `"always"` (à chaque ouverture) ou `"never"`

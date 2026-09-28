@@ -48,7 +48,9 @@ L'overlay se range ensuite dans la zone de notification, à côté de l'horloge 
 ## Quelques trucs à savoir
 
 - Valorant doit être en **plein écran fenêtré**, sinon rien ne peut s'afficher par-dessus le jeu.
-- Alt+Z, c'est aussi le raccourci de l'overlay NVIDIA. Si les deux s'ouvrent en même temps, change le tien dans `%APPDATA%\fr.valooverlay.app\config.json` (ligne `hotkey`, par exemple `"F10"`).
+- Alt+Z, c'est aussi le raccourci de l'overlay NVIDIA. Si ça te gêne, change la touche dans **Réglages** (en haut de l'overlay) : tu cliques, tu appuies sur la nouvelle touche, c'est enregistré.
+- En haut, le menu **Partie · Mon profil · Réglages** : tu regardes ta game, tu passes sur ton profil, tu reviens.
+- C'est une vraie fenêtre : elle est dans la barre des tâches et dans Alt+Tab.
 - La fenêtre se redimensionne toute seule selon ta résolution (4:3 compris). Tu peux aussi la réduire avec le bouton à côté de la croix, ou en tirant sur les bords.
 - Tout passe par ton client Riot, avec ta propre session. Rien n'est installé dans le jeu et aucun fichier du jeu n'est touché.
 - Les joueurs en mode incognito restent masqués.

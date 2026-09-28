@@ -98,7 +98,7 @@ button { font: inherit; color: inherit; }
 
 .top {
   display: grid;
-  grid-template-columns: 38rem 1fr 38rem;
+  grid-template-columns: minmax(0, 1fr) 54rem minmax(0, 1fr);
   align-items: center;
   gap: 3rem;
   padding-bottom: 2rem;
@@ -116,7 +116,56 @@ button { font: inherit; color: inherit; }
   background: var(--red);
 }
 
-.brand { display: flex; align-items: center; gap: 1.2rem; }
+.top-left { display: flex; align-items: center; gap: 2.4rem; min-width: 0; }
+.brand { display: flex; align-items: center; gap: 1.2rem; flex: none; }
+
+/* Menu principal */
+.nav { display: flex; gap: 0.4rem; min-width: 0; }
+.nav button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.9rem 1.2rem;
+  background: none;
+  border: 0;
+  font-family: var(--f-cond);
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.nav svg { width: 1.8rem; height: 1.8rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.nav button:hover { color: var(--ink); background: rgba(236, 232, 225, 0.05); }
+.nav button.on { color: var(--ink); }
+.nav button::after { content: ""; position: absolute; left: 1.2rem; right: 1.2rem; bottom: -0.2rem; height: 0.25rem; background: var(--red); transform: scaleX(0); transform-origin: left; transition: transform 0.25s var(--ease); }
+.nav button.on::after { transform: scaleX(1); }
+
+/* Réglages */
+.settings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6rem; max-width: 130rem; }
+.set-card { padding: 2.4rem 2.8rem; background: rgba(22, 35, 47, 0.85); clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1.4rem), calc(100% - 1.4rem) 100%, 0 100%); }
+.set-card.wide { grid-column: 1 / -1; }
+.set-card h3 { margin: 0 0 0.8rem; font-family: var(--f-display); font-weight: 400; font-size: 3rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.set-card p { margin: 0 0 2rem; font-size: 1.55rem; line-height: 1.5; color: var(--ink-2); }
+.keycap-btn { display: inline-flex; align-items: center; gap: 1.6rem; padding: 1.2rem 1.6rem; background: rgba(15, 25, 35, 0.7); border: 0.15rem solid var(--line); cursor: pointer; transition: border-color 0.15s ease; }
+.keycap-btn:hover { border-color: rgba(236, 232, 225, 0.35); }
+.keycap-btn.capturing { border-color: var(--red); }
+.keycap-btn em { font-style: normal; font-family: var(--f-cond); font-weight: 700; font-size: 1.3rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-3); }
+.keys { display: inline-flex; align-items: center; gap: 0.6rem; }
+.keys i { font-style: normal; font-family: var(--f-cond); font-size: 1.8rem; color: var(--ink-3); }
+kbd { min-width: 4.4rem; padding: 0.7rem 1.2rem; text-align: center; font-family: var(--f-cond); font-weight: 700; font-size: 2rem; letter-spacing: 0.06em; color: var(--ink); background: linear-gradient(180deg, #25364a, #1a2838); border: 0.1rem solid rgba(236, 232, 225, 0.18); border-bottom-width: 0.35rem; border-radius: 0.4rem; }
+.capture-txt { font-family: var(--f-cond); font-weight: 700; font-size: 1.9rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--red); }
+.set-msg { min-height: 2.2rem; margin-top: 1.4rem; font-family: var(--f-cond); font-weight: 600; font-size: 1.5rem; letter-spacing: 0.06em; color: var(--ink-2); }
+.set-msg.ok { color: var(--ally); }
+.set-msg.err { color: var(--red); }
+.settings .seg button { padding: 1.1rem 1.8rem; font-size: 1.4rem; }
+.set-about { display: flex; gap: 3rem; font-size: 1.5rem; color: var(--ink-2); }
+.set-about b { color: var(--ink); }
+.enter .set-card { animation: riseIn 0.45s var(--ease) both calc(var(--i, 0) * 60ms + 100ms + var(--ea, 0ms)); }
 .logo { width: 3.8rem; height: 3.8rem; fill: var(--red); flex: none; }
 .brand-name { font-family: var(--f-display); font-size: 2.8rem; letter-spacing: 0.04em; line-height: 1; }
 .brand-name em { font-style: normal; color: var(--red); }

@@ -966,6 +966,33 @@ async fn rr_change(riot: &Riot, puuid: &str, match_id: &str) -> Option<RrChange>
     None
 }
 
+/// Joueur connecté (menu « Mon profil »), même quand Valorant est fermé.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Me {
+    pub puuid: String,
+    pub name: Option<String>,
+    pub tag: Option<String>,
+    pub card_id: Option<String>,
+    pub level: Option<u32>,
+}
+
+#[tauri::command]
+pub fn get_me(riot: State<'_, Arc<Riot>>, cache: State<'_, Arc<CareerCache>>) -> Option<Me> {
+    let puuid = riot.puuid();
+    if puuid.is_empty() {
+        return None;
+    }
+    let known = cache.people.get(&puuid);
+    Some(Me {
+        name: known.as_ref().map(|k| k.name.clone()).filter(|s| !s.is_empty()),
+        tag: known.as_ref().map(|k| k.tag.clone()).filter(|s| !s.is_empty()),
+        card_id: known.as_ref().map(|k| k.card_id.clone()).filter(|s| !s.is_empty()),
+        level: known.as_ref().map(|k| k.level).filter(|l| *l > 0),
+        puuid,
+    })
+}
+
 /// Pseudos d'un match lu chez Riot, complétés par HenrikDev et gardés en cache.
 async fn fill_names(cache: &CareerCache, id: &str, region: &str, parsed: &ParsedMatch) -> Option<Arc<ParsedMatch>> {
     let named = henrik_match(cache, id, region).await?;
