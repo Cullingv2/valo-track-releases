@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Valo Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="root" id="root">
+    <div class="bg-word" id="bgWord">VALORANT</div>
+    <div class="bg-art"><img id="bgAgent" alt=""></div>
+    <div class="wipe" id="wipe" aria-hidden="true"><i></i><i></i></div>
+
+    <div class="intro" id="intro" aria-hidden="true">
+      <div class="intro-glow"></div>
+      <i class="intro-slash s1"></i><i class="intro-slash s2"></i>
+      <div class="intro-content">
+        <i class="intro-corner tl"></i><i class="intro-corner tr"></i><i class="intro-corner bl"></i><i class="intro-corner br"></i>
+        <div class="intro-mark">
+          <div class="intro-vwrap">
+          <i class="spark" style="--a:0deg"></i><i class="spark" style="--a:36deg"></i><i class="spark" style="--a:72deg"></i><i class="spark" style="--a:108deg"></i><i class="spark" style="--a:144deg"></i>
+          <i class="spark" style="--a:180deg"></i><i class="spark" style="--a:216deg"></i><i class="spark" style="--a:252deg"></i><i class="spark" style="--a:288deg"></i><i class="spark" style="--a:324deg"></i>
+          <svg class="intro-v" viewBox="0 0 24 24">
+            <path class="l" pathLength="1" d="M.077 2.166c-.077.038-.074.132-.076.205.002 3.074.001 6.15.001 9.225a.679.679 0 0 0 .158.463l7.64 9.55c.12.152.308.25.505.247 2.455 0 4.91.003 7.365 0 .142.02.222-.174.116-.265C10.661 15.176 5.526 8.766.4 2.35c-.08-.094-.174-.272-.322-.184z"/>
+            <path class="r" pathLength="1" d="M23.792 2.152a.252.252 0 0 0-.098.083c-3.384 4.23-6.769 8.46-10.15 12.69-.107.093-.025.288.119.265 2.439.003 4.877 0 7.316.001a.66.66 0 0 0 .552-.25c.774-.967 1.55-1.934 2.324-2.903a.72.72 0 0 0 .144-.49c-.002-3.077 0-6.153-.003-9.23.016-.11-.1-.206-.204-.167z"/>
+          </svg>
+          </div>
+          <div class="intro-word">
+            <span class="intro-name">VALO<em>//</em>TRACK</span>
+            <i class="intro-line"></i>
+          </div>
+        </div>
+        <div class="intro-sub" id="introSub"></div>
+        <div class="intro-load"><i></i></div>
+      </div>
+    </div>
+
+    <main class="panel">
+      <header class="top" id="top">
+        <div class="brand">
+          <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><path d="M23.792 2.152a.252.252 0 0 0-.098.083c-3.384 4.23-6.769 8.46-10.15 12.69-.107.093-.025.288.119.265 2.439.003 4.877 0 7.316.001a.66.66 0 0 0 .552-.25c.774-.967 1.55-1.934 2.324-2.903a.72.72 0 0 0 .144-.49c-.002-3.077 0-6.153-.003-9.23.016-.11-.1-.206-.204-.167zM.077 2.166c-.077.038-.074.132-.076.205.002 3.074.001 6.15.001 9.225a.679.679 0 0 0 .158.463l7.64 9.55c.12.152.308.25.505.247 2.455 0 4.91.003 7.365 0 .142.02.222-.174.116-.265C10.661 15.176 5.526 8.766.4 2.35c-.08-.094-.174-.272-.322-.184z"/></svg>
+          <span class="brand-name">VALO<em>//</em>TRACK</span>
+        </div>
+        <div class="meta" id="meta"></div>
+        <div class="top-right">
+          <div class="status" id="status"></div>
+          <button class="winbtn" id="compactBtn" title="Réduire la fenêtre" aria-label="Réduire la fenêtre">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-shrink" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/><path class="i-grow" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+          </button>
+          <button class="close" id="close" title="Masquer" aria-label="Masquer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="view" id="view"></section>
+    </main>
+  </div>
+
+  <script src="demo.js"></script>
+  <script src="app.js"></script>
+  <div class="resize" aria-hidden="true">
+    <i data-resize="North"></i><i data-resize="South"></i><i data-resize="West"></i><i data-resize="East"></i>
+    <i data-resize="NorthWest"></i><i data-resize="NorthEast"></i><i data-resize="SouthWest"></i><i data-resize="SouthEast"></i>
+  </div>
+</body>
+</html>

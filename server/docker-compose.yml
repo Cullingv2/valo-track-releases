@@ -1,0 +1,30 @@
+# Relais + HTTPS automatique (Let's Encrypt) avec Caddy.
+# 1. copie .env.example en .env et remplis-le
+# 2. docker compose up -d
+services:
+  relay:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - relay-data:/data
+    expose:
+      - "8787"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on:
+      - relay
+
+volumes:
+  relay-data:
+  caddy-data:

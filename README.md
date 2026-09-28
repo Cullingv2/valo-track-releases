@@ -54,7 +54,9 @@ L'overlay se range ensuite dans la zone de notification, à côté de l'horloge 
 - Les joueurs en mode incognito restent masqués.
 - Quand il est fermé, l'overlay ne fait rien et ne prend pas de FPS.
 
-Le code est open source (licence MIT) : [Cullingv2/valo-track](https://github.com/Cullingv2/valo-track). Tu peux regarder comment ça marche, le compiler toi-même ou proposer des améliorations.
+## Code source
+
+Le code est ouvert (licence [MIT](LICENSE)) et il est ici même : `src-tauri/` pour le moteur en Rust (Tauri), `ui/` pour l'interface, `server/` pour le petit serveur relais. Tu peux regarder comment ça marche, le compiler toi-même ou proposer des améliorations : tout est expliqué dans [DEVELOPPER.md](DEVELOPPER.md).
 
 Un bug, une idée ? Ouvre une [issue](../../issues).
 

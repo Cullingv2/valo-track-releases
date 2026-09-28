@@ -1,0 +1,23 @@
+# Sans Docker : sudo cp valo-relay.service /etc/systemd/system/ && sudo systemctl enable --now valo-relay
+# (le serveur est alors sur le port 8787 : mets Caddy ou nginx devant pour le HTTPS)
+[Unit]
+Description=Valo Overlay - relais HenrikDev
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=valo
+WorkingDirectory=/opt/valo-relay
+EnvironmentFile=/opt/valo-relay/.env
+Environment=DATA_DIR=/opt/valo-relay/data HOST=127.0.0.1
+ExecStart=/usr/bin/node /opt/valo-relay/server.mjs
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/valo-relay/data
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

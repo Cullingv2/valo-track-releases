@@ -1,0 +1,5 @@
+# Copie ce fichier en config.toml (même dossier) pour intégrer ton serveur relais à l'application.
+# config.toml n'est pas versionné : il ne doit jamais être publié.
+[env]
+VALO_API_SERVER = "https://ton-serveur.exemple/valo"
+VALO_API_TOKEN = "le même jeton que APP_TOKEN côté serveur"
