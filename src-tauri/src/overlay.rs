@@ -58,7 +58,7 @@ pub fn setup(app: &mut App, cfg: &Config) -> Result<(), Box<dyn std::error::Erro
     win.on_window_event(move |e| match e {
         WindowEvent::CloseRequested { api, .. } => {
             api.prevent_close();
-            set_visible(&handle, false);
+            conceal(&handle, false);
         }
         // Rouverte par la barre des tâches ou Alt+Tab : l'interface se remet à jour
         WindowEvent::Focused(true) => {
@@ -142,6 +142,12 @@ pub fn hide_overlay(app: AppHandle) {
     set_visible(&app, false);
 }
 
+/// Croix (ou Alt+F4) : rangée dans la zone de notification, hors de la barre des tâches.
+#[tauri::command]
+pub fn close_overlay(app: AppHandle) {
+    conceal(&app, false);
+}
+
 /// Raccourci : ouverte et au premier plan → réduite ; sinon (réduite, cachée ou derrière une
 /// autre fenêtre) → ramenée devant.
 pub fn toggle(app: &AppHandle) {
@@ -175,14 +181,27 @@ pub fn set_visible(app: &AppHandle, visible: bool) {
             let _ = app.emit("overlay-visibility", true);
         }
     } else {
-        if !shown {
-            return;
-        }
-        SHOWN.store(false, Ordering::SeqCst);
-        // Réduite (et non cachée) : elle reste dans la barre des tâches et dans Alt+Tab
-        let _ = w.set_always_on_top(false);
+        conceal(app, true);
+    }
+}
+
+/// `minimize` : réduite (elle reste dans la barre des tâches et dans Alt+Tab) ; sinon cachée
+/// (seule l'icône de la zone de notification reste). Le focus revient au jeu.
+fn conceal(app: &AppHandle, minimize: bool) {
+    let Some(w) = app.get_webview_window(LABEL) else { return };
+    let visible = w.is_visible().unwrap_or(false);
+    if !visible || (minimize && w.is_minimized().unwrap_or(false)) {
+        return;
+    }
+    let was_shown = SHOWN.swap(false, Ordering::SeqCst);
+    let _ = w.set_always_on_top(false);
+    if minimize {
         let _ = w.minimize();
-        native::focus(PREVIOUS.swap(0, Ordering::Relaxed));
+    } else {
+        let _ = w.hide();
+    }
+    native::focus(PREVIOUS.swap(0, Ordering::Relaxed));
+    if was_shown {
         let _ = app.emit("overlay-visibility", false);
     }
 }

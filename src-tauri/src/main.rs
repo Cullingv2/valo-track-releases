@@ -56,6 +56,7 @@ fn main() {
             tracker::get_rank,
             overlay::show_overlay,
             overlay::hide_overlay,
+            overlay::close_overlay,
             overlay::toggle_compact,
             overlay::is_compact,
             overlay::get_hotkey,

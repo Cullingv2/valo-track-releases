@@ -1760,7 +1760,7 @@ function settingsBody() {
       </section>
       <section class="set-card wide" style="--i:2">
         <h3>Fenêtre</h3>
-        <p>L'overlay est une vraie fenêtre : tu le retrouves dans la barre des tâches et avec Alt+Tab. La croix le réduit, l'application reste active (icône V rouge près de l'horloge, clic droit pour quitter).</p>
+        <p>L'overlay est une vraie fenêtre : tu le retrouves dans la barre des tâches et avec Alt+Tab. Le tiret le réduit dans la barre des tâches ; la croix le range près de l'horloge (icône V rouge : clic pour le rouvrir, clic droit pour quitter).</p>
         <div class="set-about"><span>Version <b>${esc(app.version || "")}</b></span><span>Code source et mises à jour : <b>github.com/Cullingv2/valo-track-releases</b></span></div>
       </section>`;
 }
@@ -1998,7 +1998,7 @@ function hideOverlay() {
 function setCompactIcon(compact) {
   document.documentElement.classList.toggle("compact", !!compact);
   const b = $("#compactBtn");
-  if (b) b.title = b.ariaLabel = compact ? "Agrandir la fenêtre" : "Réduire la fenêtre";
+  if (b) b.title = b.ariaLabel = compact ? "Taille normale" : "Format compact";
 }
 
 function bindUi() {
@@ -2020,7 +2020,8 @@ function bindUi() {
       if (comp !== app.view.competitive) switchScope(app.view, { competitive: comp });
     }
   });
-  $("#close").addEventListener("click", hideOverlay);
+  $("#close").addEventListener("click", () => TAURI && TAURI.core.invoke("close_overlay"));
+  $("#minBtn").addEventListener("click", hideOverlay);
   $("#nav").addEventListener("click", (e) => {
     const b = e.target.closest("[data-nav]");
     if (b) goNav(b.dataset.nav);
